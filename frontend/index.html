@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MIL-LOG | Military Logistics Management System</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="mark">ML</div><div><b>MIL-LOG</b><small>MILITARY LOGISTICS MANAGEMENT SYSTEM</small></div></div>
+  <div class="topright"><span class="online" id="apiStatus">● C API CHECKING</span><span>ADMIN</span><button id="menuBtn">☰</button></div>
+</header>
+<div class="layout" id="layout">
+<aside id="sidebar">
+  <div class="section">LOGISTICS CONTROL</div>
+  <button class="nav active" data-page="dashboard">Command Dashboard</button>
+  <button class="nav" data-page="units">Military Units</button>
+  <button class="nav" data-page="inventory">Equipment & Inventory</button>
+  <button class="nav" data-page="requests">Supply Missions</button>
+
+  <div class="section">OS RESOURCE ENGINE</div>
+  <button class="nav" data-page="scheduling">Supply Mission Scheduling</button>
+  <button class="nav" data-page="memory">Depot Storage Allocation</button>
+  <button class="nav" data-page="paging">Mission Data Paging</button>
+  <button class="nav" data-page="deadlock">Equipment Resource Safety</button>
+  <button class="nav" data-page="files">Military Record Management</button>
+
+  <div class="section">SYSTEM</div>
+  <button class="nav" data-page="reports">Logistics Reports</button>
+  <div class="sidefoot">MIL-LOG v1.0<br><span>C BACKEND • HTTP/JSON • LOCAL .DAT STORAGE</span></div>
+</aside>
+<main>
+  <div class="crumb">MIL-LOG / <span id="crumb">Command Dashboard</span></div>
+
+  <section class="page active" id="dashboard">
+    <div class="heading"><div><div class="eyebrow">LOGISTICS CONTROL</div><h1>Command Dashboard</h1><p>Operational view of units, equipment, supply missions and OS-managed resources.</p></div><button class="btn" id="refresh">Refresh Data</button></div>
+    <div class="stats">
+      <div><label>ACTIVE UNITS</label><strong id="dUnits">—</strong><small>Registered military units</small></div>
+      <div><label>PERSONNEL</label><strong id="dPersonnel">—</strong><small>Total personnel under management</small></div>
+      <div><label>EQUIPMENT</label><strong id="dEquipment">—</strong><small>Total equipment inventory</small></div>
+      <div><label>PENDING MISSIONS</label><strong id="dPending">—</strong><small>Supply requests awaiting processing</small></div>
+    </div>
+    <div class="cols">
+      <div class="box">
+        <div class="boxhead"><div><h2>Supply Mission Queue</h2><span class="sub">Requests currently entering the logistics pipeline</span></div><button class="link" data-open="requests">View all</button></div>
+        <div class="tablewrap"><table><thead><tr><th>MISSION</th><th>UNIT</th><th>EQUIPMENT</th><th>QTY</th><th>PRIORITY</th><th>STATUS</th></tr></thead><tbody id="recent"></tbody></table></div>
+      </div>
+      <div class="box">
+        <div class="boxhead"><div><h2>OS Resource Engine</h2><span class="sub">OS techniques applied to logistics operations</span></div></div>
+        <div class="engine-list">
+          <div><b>Supply Mission Scheduling</b><span>Requests → CPU processes</span><em>READY</em></div>
+          <div><b>Depot Storage Allocation</b><span>Supplies → memory blocks</span><em>READY</em></div>
+          <div><b>Mission Data Paging</b><span>Records → memory pages</span><em>READY</em></div>
+          <div><b>Equipment Resource Safety</b><span>Equipment → shared resources</span><em>READY</em></div>
+          <div><b>Military Record Management</b><span>Records → file allocation</span><em>READY</em></div>
+        </div>
+      </div>
+    </div>
+    <div class="box">
+      <div class="boxhead"><div><h2>Operational Resource Summary</h2><span class="sub">Current resource state from the C backend</span></div></div>
+      <div class="resource"><div><span>AVAILABLE EQUIPMENT</span><b id="dAvailable">—</b></div><div><span>ISSUED EQUIPMENT</span><b id="dIssued">—</b></div><div><span>PENDING MEMORY</span><b id="dMemory">—</b></div><div><span>AVG. BURST TIME</span><b id="dBurst">—</b></div></div>
+    </div>
+  </section>
+
+  <section class="page" id="units">
+    <div class="heading"><div><div class="eyebrow">LOGISTICS CONTROL</div><h1>Military Units</h1><p>Manage units that request and receive logistics resources.</p></div><button class="btn primary" data-modal="unitModal">Register Unit</button></div>
+    <div class="box"><div class="callout"><b>Logistics role:</b> Each unit is a resource consumer. Its supply requests become processes for the scheduling engine.</div><div class="tablewrap"><table><thead><tr><th>UNIT ID</th><th>UNIT</th><th>LOCATION</th><th>PERSONNEL</th><th>LOGISTICS STATUS</th></tr></thead><tbody id="unitsTable"></tbody></table></div></div>
+  </section>
+
+  <section class="page" id="inventory">
+    <div class="heading"><div><div class="eyebrow">LOGISTICS CONTROL</div><h1>Equipment & Inventory</h1><p>Track equipment available for allocation to military units.</p></div><button class="btn primary" data-modal="equipmentModal">Add Equipment</button></div>
+    <div class="stats three"><div><label>TOTAL EQUIPMENT</label><strong id="iTotal">—</strong><small>All recorded items</small></div><div><label>AVAILABLE</label><strong id="iAvailable">—</strong><small>Ready for issue</small></div><div><label>ISSUED</label><strong id="iIssued">—</strong><small>Already allocated</small></div></div>
+    <div class="box"><div class="callout"><b>OS role:</b> Equipment quantities act as scarce resources when supply missions are processed.</div><div class="tablewrap"><table><thead><tr><th>EQUIPMENT ID</th><th>EQUIPMENT</th><th>CATEGORY</th><th>QUANTITY</th><th>AVAILABLE</th><th>STATUS</th></tr></thead><tbody id="inventoryTable"></tbody></table></div></div>
+  </section>
+
+  <section class="page" id="requests">
+    <div class="heading"><div><div class="eyebrow">LOGISTICS CONTROL</div><h1>Supply Missions</h1><p>Every supply request is treated as a logistics process for OS scheduling.</p></div><button class="btn primary" data-modal="requestModal">Create Mission</button></div>
+    <div class="stats three"><div><label>TOTAL MISSIONS</label><strong id="rTotal">—</strong></div><div><label>PENDING</label><strong id="rPending">—</strong></div><div><label>COMPLETED</label><strong id="rCompleted">—</strong></div></div>
+    <div class="box"><div class="callout"><b>Process model:</b> Priority, burst time and memory requirement are stored with each mission so the OS scheduling and memory modules can operate on real logistics requests.</div><div class="tablewrap"><table><thead><tr><th>MISSION</th><th>UNIT</th><th>EQUIPMENT</th><th>QTY</th><th>PRIORITY</th><th>BURST</th><th>MEMORY</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="requestsTable"></tbody></table></div></div>
+  </section>
+
+  <section class="page" id="scheduling">
+    <div class="heading"><div><div class="eyebrow">OS RESOURCE ENGINE</div><h1>Supply Mission Scheduling</h1><p>Pending supply missions are treated as processes competing for execution time.</p></div></div>
+    <div class="mapping"><span>LOGISTICS OBJECT</span><b>Supply Mission</b><i>→</i><span>OS OBJECT</span><b>Process</b></div>
+    <div class="box controls"><label>ALGORITHM<select id="schedAlgo"><option>FCFS</option><option>SJF</option><option>Priority</option><option>Round Robin</option></select></label><label>TIME QUANTUM<input id="quantum" type="number" value="2" min="1"></label><button class="btn primary" id="runSched">Schedule Missions</button></div>
+    <div class="box"><div class="boxhead"><div><h2>Mission Execution Order</h2><span class="sub">Calculated by the C scheduling API using current pending requests</span></div></div><pre id="schedResult">No scheduling analysis executed.</pre></div>
+    <div class="method-grid"><div><b>FCFS</b><span>Process missions in arrival order.</span></div><div><b>SJF</b><span>Serve the shortest burst-time mission first.</span></div><div><b>PRIORITY</b><span>High-priority missions execute first.</span></div><div><b>ROUND ROBIN</b><span>Share execution time using a time quantum.</span></div></div>
+  </section>
+
+  <section class="page" id="memory">
+    <div class="heading"><div><div class="eyebrow">OS RESOURCE ENGINE</div><h1>Depot Storage Allocation</h1><p>Incoming logistics loads are represented as processes requesting memory blocks.</p></div></div>
+    <div class="mapping"><span>LOGISTICS OBJECT</span><b>Supply Load</b><i>→</i><span>OS OBJECT</span><b>Memory Request</b></div>
+    <div class="box controls"><label>ALLOCATION METHOD<select id="memoryAlgo"><option>First Fit</option><option>Best Fit</option><option>Worst Fit</option></select></label><label>DEPOT BLOCKS<input id="blocks" value="100,250,300,500,600"></label><label>SUPPLY LOADS<input id="processes" value="212,417,112,426"></label><button class="btn primary" id="runMemory">Allocate Storage</button></div>
+    <div class="box"><div class="boxhead"><div><h2>Depot Allocation Result</h2><span class="sub">Memory allocation simulation through the C API</span></div></div><pre id="memoryResult">No storage allocation executed.</pre></div>
+    <div class="method-grid"><div><b>FIRST FIT</b><span>Use the first suitable storage block.</span></div><div><b>BEST FIT</b><span>Use the smallest suitable block.</span></div><div><b>WORST FIT</b><span>Use the largest suitable block.</span></div></div>
+  </section>
+
+  <section class="page" id="paging">
+    <div class="heading"><div><div class="eyebrow">OS RESOURCE ENGINE</div><h1>Mission Data Paging</h1><p>Mission and logistics records are represented as pages competing for limited memory frames.</p></div></div>
+    <div class="mapping"><span>LOGISTICS OBJECT</span><b>Mission Record</b><i>→</i><span>OS OBJECT</span><b>Page</b></div>
+    <div class="box controls"><label>REPLACEMENT ALGORITHM<select id="pagingAlgo"><option>FIFO</option><option>LRU</option><option>Optimal</option></select></label><label>MEMORY FRAMES<input id="frames" type="number" value="3" min="1"></label><label>MISSION PAGE REFERENCES<input id="refs" value="7,0,1,2,0,3,0,4,2,3"></label><button class="btn primary" id="runPaging">Run Paging</button></div>
+    <div class="box"><div class="boxhead"><div><h2>Paging Analysis</h2><span class="sub">Page faults and hits calculated by the C API</span></div></div><pre id="pagingResult">No paging analysis executed.</pre></div>
+    <div class="method-grid"><div><b>FIFO</b><span>Replace the page that entered memory first.</span></div><div><b>LRU</b><span>Replace the least recently used mission page.</span></div><div><b>OPTIMAL</b><span>Replace the page needed farthest in the future.</span></div></div>
+  </section>
+
+  <section class="page" id="deadlock">
+    <div class="heading"><div><div class="eyebrow">OS RESOURCE ENGINE</div><h1>Equipment Resource Safety</h1><p>Military equipment is treated as a shared resource that must be allocated without creating an unsafe state.</p></div></div>
+    <div class="mapping"><span>LOGISTICS OBJECT</span><b>Military Unit</b><i>→</i><span>OS OBJECT</span><b>Process</b></div>
+    <div class="cols">
+      <div class="box"><div class="boxhead"><div><h2>Banker's Algorithm</h2><span class="sub">Safe-state analysis used for military resource allocation</span></div><span class="tag">C BACKEND</span></div>
+        <div class="resource-table"><div><b>RESOURCE</b><b>R1</b><b>R2</b><b>R3</b></div><div><span>Example meaning</span><span>Vehicles</span><span>Fuel</span><span>Repair Bays</span></div><div><span>Available</span><span>3</span><span>3</span><span>2</span></div></div>
+        <div class="safe-state"><b>SAFE STATE</b><span>Example allocation state</span><strong>P1 → P3 → P4 → P2</strong></div>
+        <p class="desc">The finalized C backend contains the interactive Banker's Algorithm and deadlock detection routines. The frontend uses this page to explain their role in protecting military equipment allocation from unsafe states.</p>
+      </div>
+      <div class="box"><div class="boxhead"><div><h2>Deadlock Detection</h2><span class="sub">Prevent conflicting resource claims from blocking operations</span></div><span class="ok">READY</span></div><div class="big-status">RESOURCE SAFETY</div><p class="desc">Units can be treated as processes and equipment categories as resource types. The C backend can calculate whether the current allocation can complete safely.</p><div class="note">For custom matrices, use the Resource Allocation option in the C backend. The core algorithm is intentionally unchanged.</div></div>
+    </div>
+  </section>
+
+  <section class="page" id="files">
+    <div class="heading"><div><div class="eyebrow">OS RESOURCE ENGINE</div><h1>Military Record Management</h1><p>Mission, unit and supply records are persisted in the local file system.</p></div><button class="btn primary" data-modal="fileModal">Create Record</button></div>
+    <div class="mapping"><span>LOGISTICS OBJECT</span><b>Military Record</b><i>→</i><span>OS OBJECT</span><b>File</b></div>
+    <div class="methods"><div><b>CONTIGUOUS</b><span>Record occupies sequential disk blocks.</span></div><div><b>LINKED</b><span>Record blocks are connected through links.</span></div><div><b>INDEXED</b><span>An index block stores pointers to record blocks.</span></div></div>
+    <div class="box"><div class="callout"><b>Persistence:</b> Records are stored through the C backend in <code>data/files.dat</code>. The three allocation methods remain the finalized backend's OS simulations.</div><div class="tablewrap"><table><thead><tr><th>RECORD ID</th><th>FILE / RECORD</th><th>BLOCKS</th><th>STORAGE</th><th>STATUS</th></tr></thead><tbody id="filesTable"></tbody></table></div></div>
+  </section>
+
+  <section class="page" id="reports">
+    <div class="heading"><div><div class="eyebrow">SYSTEM</div><h1>Logistics Reports</h1><p>Current logistics and OS module status from the C backend.</p></div><button class="btn primary" id="export">Export Report</button></div>
+    <div class="box"><pre id="report">Loading report...</pre></div>
+  </section>
+</main></div>
+
+<div class="modalbg" id="modalBg">
+  <div class="modal" id="unitModal"><button class="close">×</button><h2>Register Military Unit</h2><form id="unitForm"><label>UNIT NAME<input required name="name"></label><label>LOCATION<input required name="location"></label><label>PERSONNEL<input required type="number" min="0" name="personnel"></label><button class="btn primary">Register Unit</button></form></div>
+  <div class="modal" id="equipmentModal"><button class="close">×</button><h2>Add Equipment</h2><form id="equipmentForm"><label>EQUIPMENT NAME<input required name="name"></label><label>CATEGORY<input required name="category"></label><label>QUANTITY<input required type="number" min="0" name="quantity"></label><button class="btn primary">Add Equipment</button></form></div>
+  <div class="modal" id="requestModal"><button class="close">×</button><h2>Create Supply Mission</h2><form id="requestForm"><label>UNIT ID<input required type="number" name="unit"></label><label>EQUIPMENT ID<input required type="number" name="equipment"></label><label>QUANTITY<input required type="number" min="1" name="quantity"></label><label>PRIORITY<select name="priority"><option value="1">1 - High</option><option value="2">2 - Medium</option><option value="3">3 - Low</option></select></label><label>BURST TIME<input required type="number" min="1" name="burst" value="5"></label><label>MEMORY (MB)<input required type="number" min="1" name="memory" value="128"></label><button class="btn primary">Create Mission</button></form></div>
+  <div class="modal" id="fileModal"><button class="close">×</button><h2>Create Military Record</h2><form id="fileForm"><label>RECORD NAME<input required name="name"></label><label>SIZE (BLOCKS)<input required type="number" min="1" max="100" name="size"></label><button class="btn primary">Create Record</button></form></div>
+</div>
+<div id="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# Compiled C files and executables
+*.o
+*.exe
+*.out
+mil-log
+mil-log-api
+
+# Debugging and log files
+*.log
+core
+core.*
+
+# IDE and editor settings
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Python cache (harmless if Python is only used for local frontend serving)
+__pycache__/
+*.py[cod]
